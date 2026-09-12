@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🖐️ Kai Onnu Kaattikke! 😂</title>
+  <meta name="description" content="A cute aesthetic Kerala-inspired AI hand-checking app! Ammachi inspects your hand and fingernails with playful verdicts.">
+  
+  <!-- Rounded playful fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Noto+Sans+Malayalam:wght@400;600;700;900&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20width=%221em%22%20height=%221em%22><text y=%22.9em%22 font-size=%2290%22>🖐️</text></svg>">
+</head>
+<body>
+
+  <!-- Confetti & Celebration FX Canvas -->
+  <canvas id="fxCanvas"></canvas>
+
+  <!-- Top Minimal Sound Button (Top-Right Only, No Badges) -->
+  <div class="top-bar-container">
+    <button id="soundToggleBtn" class="sound-circle-btn" title="Toggle Sound / ശബ്ദം" aria-label="Toggle Sound">
+      <span id="soundIcon">🔊</span>
+    </button>
+  </div>
+
+  <!-- Main Container -->
+  <div class="app-layout">
+
+    <!-- HERO HEADER: Title & Subtitle Directly (No Malayalam heading above, No badge) -->
+    <header class="app-header-area">
+      <h1 class="main-title">🖐️ <span class="title-brown">Kai Onnu</span> <span class="title-orange">Kaattikke!</span> 😂</h1>
+      <p class="main-subtitle">“Show your hand! Let Ammachi judge if it's time for a bath!”</p>
+    </header>
+
+    <!-- 3-COLUMN LIVING ROOM LAYOUT (Desktop) / STACKED (Mobile) -->
+    <div class="main-content-columns">
+
+      <!-- LEFT: AMMACHI CHARACTER -->
+      <aside class="left-character-col">
+        <div class="ammachi-card-wrap">
+          
+          <!-- Hand-drawn Cartoon Speech Bubble -->
+          <div class="handdrawn-speech-bubble" id="speechBubble">
+            <div class="bubble-speaker-label" id="speechSpeaker">👵 അമ്മച്ചി പറയുന്നു (Ammachi):</div>
+            <div class="bubble-malayalam-text" id="speechText">“കൈ ഒന്ന് കാണിച്ചേ... നോക്കട്ടെ!”</div>
+            <div class="bubble-english-text" id="speechTrans">“Show your hand child... let me check!”</div>
+            <div class="bubble-pointer"></div>
+          </div>
+
+          <!-- Ammachi with Magnifying Glass -->
+          <div class="ammachi-illustration-frame" id="grandmaFigureWrap">
+            <img src="{{ url_for('static', filename='images/grandma.png') }}" 
+                 alt="Ammachi inspecting with magnifying glass" 
+                 class="ammachi-figure-img"
+                 id="grandmaImg">
+            <div class="mood-circle-badge" id="grandmaMood">🔍</div>
+          </div>
+
+          <div class="ammachi-name-pill">
+            <span class="pill-emoji">👵</span>
+            <span class="pill-name">അമ്മച്ചി (Ammachi)</span>
+          </div>
+
+        </div>
+      </aside>
+
+      <!-- CENTER: MAIN INTERACTION PANEL -->
+      <main class="center-panel-col">
+        <div class="aesthetic-main-panel" id="mainPanel">
+          
+          <!-- STEP 1: INITIAL BUTTONS & PREVIEW STATE -->
+          <div class="panel-inner-state" id="panelInputState">
+            
+            <!-- Large Action Buttons: Camera & Upload -->
+            <div class="actions-button-grid">
+              
+              <!-- 📸 Take a Picture Button (Pastel Peach/Pink) -->
+              <button id="openCameraBtn" class="action-card-btn btn-peach-camera" type="button">
+                <span class="action-icon-large">📸</span>
+                <span class="action-btn-labels">
+                  <span class="action-btn-primary">Take a Picture</span>
+                  <span class="action-btn-sub">ഫോട്ടോ എടുക്കുക</span>
+                </span>
+              </button>
+
+              <!-- 🖼️ Upload Image Button (Pastel Green) -->
+              <button id="triggerUploadBtn" class="action-card-btn btn-green-upload" type="button">
+                <span class="action-icon-large">🖼️</span>
+                <span class="action-btn-labels">
+                  <span class="action-btn-primary">Upload Image</span>
+                  <span class="action-btn-sub">ചിത്രം അപ്‌ലോഡ് ചെയ്യുക</span>
+                </span>
+              </button>
+              <input type="file" id="fileInput" accept="image/png, image/jpeg, image/jpg" style="display: none;">
+            </div>
+
+            <!-- Subtle Quick Test Chips -->
+            <div class="quick-test-row">
+              <span class="quick-test-label">⚡ Quick Demo Hand:</span>
+              <button type="button" class="demo-chip chip-clean" id="demoCleanBtn">
+                <span>✨ Clean Hand Demo</span>
+              </button>
+              <button type="button" class="demo-chip chip-dirty" id="demoDirtyBtn">
+                <span>🟫 Dirty Hand Demo</span>
+              </button>
+            </div>
+
+            <!-- Image Preview Area with Subtle Dashed Border -->
+            <div class="dashed-preview-zone" id="dashedPreviewBox">
+              
+              <!-- Before selecting: Empty State -->
+              <div class="empty-preview-prompt" id="emptyPlaceholder">
+                <span class="empty-hand-icon">🖐️</span>
+                <p class="empty-prompt-title">Your hand photo will appear here...</p>
+                <span class="empty-prompt-hint">Click 📸 Take a Picture or 🖼️ Upload Image above</span>
+              </div>
+
+              <!-- After selecting: Active Photo Preview -->
+              <div class="active-preview-container hidden" id="activePreviewWrap">
+                <div class="preview-img-wrapper">
+                  <img id="previewImage" alt="Hand Photo Preview" class="hand-photo-img">
+                  <div class="scanning-laser-line hidden" id="scanLaser"></div>
+                </div>
+
+                <div class="preview-actions-row">
+                  <button id="analyzeBtn" class="primary-analyze-button" type="button">
+                    <span>🔍 Analyze My Hand!</span>
+                  </button>
+                  <button id="retakeBtn" class="secondary-retake-button" type="button">
+                    <span>🔄 Change Photo</span>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- STEP 2: 3-STAGE SCANNING ANIMATION STATE -->
+          <div class="panel-inner-state hidden" id="panelScanningState">
+            
+            <div class="scanner-magnifier-box">
+              <div class="radar-lens-circle">
+                <span class="lens-hand-emoji">🖐️</span>
+                <div class="lens-scanner-sweep"></div>
+              </div>
+            </div>
+
+            <!-- 3 Sequential Animated Steps -->
+            <div class="scanner-steps-list">
+              <div class="scan-step-box" id="scanStep1">
+                <span class="step-num-badge">1</span>
+                <span class="step-desc-text">🔍 Kai nokkunnu...</span>
+                <span class="step-status-icon">⏳</span>
+              </div>
+              <div class="scan-step-box" id="scanStep2">
+                <span class="step-num-badge">2</span>
+                <span class="step-desc-text">🕵️ Nails check cheyyunnu...</span>
+                <span class="step-status-icon">⏳</span>
+              </div>
+              <div class="scan-step-box" id="scanStep3">
+                <span class="step-num-badge">3</span>
+                <span class="step-desc-text">👮 Verdict ready aakkunnu...</span>
+                <span class="step-status-icon">⏳</span>
+              </div>
+            </div>
+
+            <p class="scanner-subtext-voice" id="scanHumorText">
+              🔍 അമ്മച്ചി സൂക്ഷ്മമായി പരിശോധിക്കുന്നു... (Ammachi inspecting closely!)
+            </p>
+          </div>
+
+          <!-- STEP 3: RESULTS VERDICT STATE -->
+          <div class="panel-inner-state hidden" id="panelResultState">
+            
+            <!-- Result Banner (Dirty or Clean) -->
+            <div class="verdict-banner-box" id="resultBanner">
+              <div class="verdict-tag-pill" id="verdictTag">VERDICT</div>
+              <h2 class="verdict-malayalam-title" id="verdictMalayalam"></h2>
+              <p class="verdict-english-sub" id="verdictEnglish"></p>
+            </div>
+
+            <!-- Cleanliness Score 0 - 100 -->
+            <div class="score-card-container">
+              <div class="score-meta-header">
+                <span class="score-label-text">🧼 Hand Cleanliness Score</span>
+                <span class="score-points-val" id="scoreNumber">0/100</span>
+              </div>
+              <div class="score-track-bar">
+                <div class="score-fill-indicator" id="scoreMeterFill" style="width: 0%;"></div>
+              </div>
+              <div class="score-tier-comment-box">
+                <span class="comment-quote-text" id="scoreComment">...</span>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="result-button-actions">
+              <button id="checkAgainBtn" class="result-action-btn btn-again" type="button">
+                <span>🔄 Check Again</span>
+              </button>
+              <button id="shareResultBtn" class="result-action-btn btn-share" type="button">
+                <span>📤 Share Result</span>
+              </button>
+              <button id="replayVoiceBtn" class="result-action-btn btn-voice" type="button">
+                <span>🗣️ Hear Ammachi</span>
+              </button>
+            </div>
+
+          </div>
+
+          <!-- Subtle Privacy Message at Bottom of Panel -->
+          <footer class="panel-privacy-subtle">
+            <div class="privacy-line-en">
+              <span class="lock-icon">🔒</span>
+              <span>Your photo is used only for this fun analysis and is not stored.</span>
+            </div>
+            <div class="privacy-line-ml">ഇത് photo save ചെയ്യില്ല ❤️</div>
+          </footer>
+
+        </div>
+      </main>
+
+      <!-- RIGHT: AESTHETIC KERALA LIVING ROOM DECOR -->
+      <aside class="right-decor-col">
+        <div class="cozy-decor-card">
+          <img src="{{ url_for('static', filename='images/cozy-living-room.png') }}" 
+               alt="Aesthetic Kerala home living room with window, plants, wooden shelf, books, and flowers" 
+               class="cozy-decor-img">
+          <div class="decor-card-footer">
+            <span class="plant-emoji">🌿</span>
+            <span class="decor-card-note">സുഖമുള്ള കേരള വീട് • Cozy Home</span>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+
+  <!-- LIVE CAMERA VIEWFINDER MODAL -->
+  <div class="camera-modal-backdrop hidden" id="cameraModal">
+    <div class="camera-modal-card">
+      <div class="camera-modal-top">
+        <h3>📸 കൈ ഫ്രെയിമിൽ വെക്കൂ (Hold Hand in Frame)</h3>
+        <button id="closeCameraBtn" class="modal-close-btn" aria-label="Close Camera">✕</button>
+      </div>
+
+      <div class="camera-viewport-frame">
+        <video id="webcamVideo" autoplay playsinline muted></video>
+        <div class="camera-hand-stencil">
+          <span class="hand-stencil-label">🖐️ Keep hand & fingernails here</span>
+        </div>
+      </div>
+
+      <div class="camera-modal-controls">
+        <button id="flipCameraBtn" class="cam-button-aux" type="button">🔄 Flip</button>
+        <button id="captureBtn" class="cam-shutter-button" type="button" aria-label="Capture Photo">
+          <span class="shutter-inner-dot"></span>
+        </button>
+        <button id="cancelCameraBtn" class="cam-button-aux" type="button">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="aesthetic-toast hidden"></div>
+
+  <!-- JavaScript Controller -->
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
